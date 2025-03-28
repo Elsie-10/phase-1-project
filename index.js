@@ -46,7 +46,28 @@ document.addEventListener("DOMContentLoaded", async () => {
           <button class="delete-btn" data-id="${order.id}">Delete</button>
       `;
       orderlist.appendChild(orderDiv);
-  }
+      if (order.status === "Pending") {
+        setTimeout(async () => {
+            try {
+                const response = await fetch(`${BIN_URL}/latest`);
+                const data = await response.json();
+                let orders = data.record.orders || [];
+                orders = orders.map(o => o.id === order.id ? { ...o, status: "Complete" } : o);
+                await fetch(BIN_URL, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ orders })
+                });
+                orderDiv.querySelector("span").textContent = "Complete";
+                orderDiv.querySelector("span").classList.remove("pending");
+                orderDiv.querySelector("span").classList.add("complete");
+            } catch (error) {
+                console.error("Error updating order status:", error);
+            }
+        }, 300000);
+    }
+}
+  
 
   orderForm.addEventListener("submit", async (event) => {
       event.preventDefault();
