@@ -3,168 +3,109 @@ document.addEventListener("DOMContentLoaded", async () => {
   const orderForm = document.getElementById("orderForm");
 
   const priceList = {
-    Pizza: 10.99,
-    Burger: 7.99,
-    Pasta: 8.49,
-    salad: 5.49,
+      Pizza: 10.99,
+      Burger: 7.99,
+      Pasta: 8.49,
+      Salad: 5.49,
   };
 
   const orderSelect = document.getElementById("orderDetails");
   const priceInput = document.getElementById("orderPrice");
+  const BIN_URL = "https://api.jsonbin.io/v3/b/67e6c7b08960c979a57a3cbd";
 
-  // When user selects an item, update the price field
   orderSelect.addEventListener("change", () => {
-    const selectedItem = orderSelect.value;
-    console.log("Selected item:", selectedItem); // Debugging
-
-    if (selectedItem in priceList) {
-      priceInput.value = `$${priceList[selectedItem].toFixed(2)}`;
-    } else {
-      console.error("Item not found in priceList:", selectedItem);
-      priceInput.value = ""; // Clear the price field
-    }
+      const selectedItem = orderSelect.value;
+      priceInput.value = selectedItem in priceList ? `$${priceList[selectedItem].toFixed(2)}` : "";
   });
 
-  // Initialize price on page load
   if (orderSelect.value in priceList) {
-    priceInput.value = `$${priceList[orderSelect.value].toFixed(2)}`;
+      priceInput.value = `$${priceList[orderSelect.value].toFixed(2)}`;
   }
-  console.log(priceList["Pizza"]); // Should return 10.99
-  console.log(document.getElementById("orderDetails").value);
 
-
-  // Function to fetch and display orders
   async function loadOrders() {
-    try {
-      const response = await fetch("http://localhost:3000/orders");
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      try {
+          const response = await fetch(`${BIN_URL}/latest`);
+          if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+          const data = await response.json();
+          const orders = data.record.orders || [];
+          orderlist.innerHTML = "";
+          orders.forEach(displayOrder);
+      } catch (error) {
+          console.error("Error loading orders:", error);
       }
-      const data = await response.json();
-      console.log("Fetched orders:", data); // Debugging line
-      orderlist.innerHTML = ""; // Clear previous orders
-      data.forEach(displayOrder);
-    } catch (error) {
-      console.error("Error loading the JSON file:", error);
-    }
   }
 
-  // Function to display a single order
   function displayOrder(order) {
-    let orderDiv = document.createElement("div");
-    orderDiv.classList.add("order");
-    orderDiv.innerHTML = `
-          <strong>${order.name}</strong> (Table: ${order.table}, Contact: ${
-      order.contact
-    }) 
+      let orderDiv = document.createElement("div");
+      orderDiv.classList.add("order");
+      orderDiv.innerHTML = `
+          <strong>${order.name}</strong> (Table: ${order.table}, Contact: ${order.contact})
           <strong>Order:</strong> ${order.order} <br>
-        <strong>Price:</strong> ${order.price ? order.price : "$0.00"} <br>
-          <span class="${order.status === "Pending" ? "pending" : "complete"}">
-              ${order.status}
-          </span>
+          <strong>Price:</strong> ${order.price || "$0.00"} <br>
+          <span class="${order.status === "Pending" ? "pending" : "complete"}">${order.status}</span>
           <button class="delete-btn" data-id="${order.id}">Delete</button>
-     `;
-
-    orderlist.appendChild(orderDiv);
-
-    // If the order is pending, schedule an update after 5 minutes
-    if (order.status === "Pending") {
-      setTimeout(async () => {
-        try {
-          await fetch(`http://localhost:3000/orders/${order.id}`, {
-            method: "PATCH", // Update the existing order
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: "Complete" }),
-          });
-
-          // Update status in the UI
-          orderDiv.querySelector("span").textContent = "Complete";
-          orderDiv.querySelector("span").classList.remove("pending");
-          orderDiv.querySelector("span").classList.add("complete");
-        } catch (error) {
-          console.error("Error updating order status:", error);
-        }
-      }, 300000); // 5 minutes = 300000 ms
-    }
+      `;
+      orderlist.appendChild(orderDiv);
   }
 
-  // Handle form submission
   orderForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const name = document.getElementById("customerName").value.trim();
-    const contact = document.getElementById("customerContact").value.trim();
-    const table = document.getElementById("tableNumber").value.trim();
-    // const orderDetails = document.getElementById("orderDetails").value.trim();
-    const orderDetails = orderSelect.value.trim();
-    const orderPrice = priceInput.value.trim();
-
-    // Fetch existing orders to get the last order's ID
-    const response = await fetch("http://localhost:3000/orders");
-    const orders = await response.json();
-
-    //limits the table to only 15
-    const maxtable = 15
-    const usedtables = new Set(orders.map(order=>order.table))
-
-    if(usedtables.size >= maxtable){
-      alert ("All tables are occupied! please wait for another table")
-      return;
-    }
-    if(usedtables.has(table)){
-      alert(`table ${table} is already occupied please choose another table`)
-      return;
-    }
-
-    // Determine the next sequential ID
-    const lastId =
-      orders.length > 0 ? Math.max(...orders.map((order) => order.id)) : 0;
-    const newId = lastId + 1;
-
-    const newOrder = {
-      id: newId, // Set the ID manually
-      name,
-      contact,
-      table,
-      order: orderDetails,
-      price: `$${parseFloat(orderPrice.replace("$", ""))}`,  // Ensure price format. Add price to order
-      status: "Pending",
-    };
-
-    // Send order to db.json
-    try {
-      const response = await fetch("http://localhost:3000/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newOrder),
-      });
-
-      const savedOrder = await response.json();
-      displayOrder(savedOrder); // Display order in UI immediately
-      orderForm.reset(); // Reset form after submission
-    } catch (error) {
-      console.error("Error submitting order:", error);
-    }
-  });
-
-  // Handle deleting an order
-  orderlist.addEventListener("click", async (event) => {
-    if (event.target.classList.contains("delete-btn")) {
-      const orderId = event.target.getAttribute("data-id");
+      event.preventDefault();
+      const name = document.getElementById("customerName").value.trim();
+      const contact = document.getElementById("customerContact").value.trim();
+      const table = document.getElementById("tableNumber").value.trim();
+      const orderDetails = orderSelect.value.trim();
+      const orderPrice = priceInput.value.trim();
 
       try {
-        await fetch(`http://localhost:3000/orders/${orderId}`, {
-          // Fixed template literal
-          method: "DELETE",
-        });
+          const response = await fetch(`${BIN_URL}/latest`);
+          const data = await response.json();
+          let orders = data.record.orders || [];
 
-        event.target.parentElement.remove(); // Remove from UI
+          const maxTables = 15;
+          const usedTables = new Set(orders.map(order => order.table));
+          if (usedTables.size >= maxTables || usedTables.has(table)) {
+              alert(`Table ${table} is unavailable!`);
+              return;
+          }
+
+          const newId = orders.length > 0 ? Math.max(...orders.map(o => o.id)) + 1 : 1;
+          const newOrder = { id: newId, name, contact, table, order: orderDetails, price: orderPrice, status: "Pending" };
+          orders.push(newOrder);
+
+          await fetch(BIN_URL, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orders })
+          });
+
+          displayOrder(newOrder);
+          orderForm.reset();
       } catch (error) {
-        console.error("Error deleting order:", error);
+          console.error("Error submitting order:", error);
       }
-    }
   });
 
-  // Load orders when the page loads
+  orderlist.addEventListener("click", async (event) => {
+      if (event.target.classList.contains("delete-btn")) {
+          const orderId = parseInt(event.target.getAttribute("data-id"));
+          try {
+              const response = await fetch(`${BIN_URL}/latest`);
+              const data = await response.json();
+              let orders = data.record.orders || [];
+              orders = orders.filter(order => order.id !== orderId);
+
+              await fetch(BIN_URL, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ orders })
+              });
+
+              event.target.parentElement.remove();
+          } catch (error) {
+              console.error("Error deleting order:", error);
+          }
+      }
+  });
+
   loadOrders();
 });
