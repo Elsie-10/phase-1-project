@@ -15,13 +15,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   // When user selects an item, update the price field
   orderSelect.addEventListener("change", () => {
     const selectedItem = orderSelect.value;
-    console.log("Selected item:", selectedItem); 
-    if (priceList.hasOwnProperty(selectedItem)) {
-      priceInput.value = `$${priceList[selectedItem].toFixed(2)}`; // Ensure correct format
+    console.log("Selected item:", selectedItem); // Debugging
+
+    if (selectedItem in priceList) {
+      priceInput.value = `$${priceList[selectedItem].toFixed(2)}`;
     } else {
-      priceInput.value = ""; // Clear price if no valid item selected
+      console.error("Item not found in priceList:", selectedItem);
+      priceInput.value = ""; // Clear the price field
     }
   });
+
+  // Initialize price on page load
+  if (orderSelect.value in priceList) {
+    priceInput.value = `$${priceList[orderSelect.value].toFixed(2)}`;
+  }
+  console.log(priceList["Pizza"]); // Should return 10.99
+  console.log(document.getElementById("orderDetails").value);
+
 
   // Function to fetch and display orders
   async function loadOrders() {

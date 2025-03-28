@@ -35,6 +35,15 @@
       "order": "Pasta",
       "price": "$8.49",
       "status": "Pending"
+    },
+    {
+      "id": 14,
+      "name": "Marion",
+      "contact": "0122834290",
+      "table": "4",
+      "order": "Pizza",
+      "price": "$10.99",
+      "status": "Pending"
     }
   ]
 }
