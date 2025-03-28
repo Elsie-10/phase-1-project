@@ -9,7 +9,7 @@
  Mouse over when the mouse hovers over the buttons.
 Form submit event listener
 Click button(delete button)
-* run json-server --watch db.json --port 3000 so that js works.
+## run json-server --watch db.json --port 3000 so that js works.
 ## HOW THE APPLICATION WORKS
 I first enter the customers detail and the order he/she wants.
 the order will read pendimg for 5 minutes after that it will read complete.

@@ -1,59 +1,39 @@
 {
   "orders": [
     {
-      "id": "3",
-      "name": "Nancy Drew",
-      "contact": "243-245-8904",
-      "table": 4,
+      "id": 10,
+      "name": "Tabby Oscar",
+      "contact": "0722667512",
+      "table": "1",
       "order": "Pasta",
-      "status": "Complete"
+      "price": "$8.49",
+      "status": "Pending"
     },
     {
-      "id": "4",
-      "name": "Ken Bobaly",
-      "contact": "543-678-0956",
-      "table": 1,
-      "order": "Pizza",
-      "status": "Complete"
-    },
-    {
-      "id": 5,
+      "id": 11,
       "name": "Elsie Oscar",
       "contact": "0122334489",
-      "table": "1",
+      "table": "3",
       "order": "Pizza",
+      "price": "$10.99",
       "status": "Pending"
     },
     {
-      "id": 6,
-      "name": "oscar",
+      "id": 12,
+      "name": "Elsie Oscar",
       "contact": "0122334489",
       "table": "2",
-      "order": "Pizza",
+      "order": "Pasta",
+      "price": "$8.49",
       "status": "Pending"
     },
     {
-      "id": 7,
+      "id": 13,
       "name": "oscar",
       "contact": "0122678923",
-      "table": "2",
-      "order": "Pizza",
-      "status": "Pending"
-    },
-    {
-      "id": 8,
-      "name": "oscar",
-      "contact": "0122334489",
-      "table": "1",
-      "order": "Pizza",
-      "status": "Pending"
-    },
-    {
-      "id": 9,
-      "name": "Nancy",
-      "contact": "0723661876",
-      "table": "2",
-      "order": "Salad",
+      "table": "5",
+      "order": "Pasta",
+      "price": "$8.49",
       "status": "Pending"
     }
   ]

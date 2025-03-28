@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     Pizza: 10.99,
     Burger: 7.99,
     Pasta: 8.49,
-    salad: 5.49
+    salad: 5.49,
   };
 
   const orderSelect = document.getElementById("orderDetails");
@@ -15,7 +15,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // When user selects an item, update the price field
   orderSelect.addEventListener("change", () => {
     const selectedItem = orderSelect.value;
-    priceInput.value = selectedItem ? `$${priceList[selectedItem]}` : ""; // Set price or clear field
+    console.log("Selected item:", selectedItem); 
+    if (priceList.hasOwnProperty(selectedItem)) {
+      priceInput.value = `$${priceList[selectedItem].toFixed(2)}`; // Ensure correct format
+    } else {
+      priceInput.value = ""; // Clear price if no valid item selected
+    }
   });
 
   // Function to fetch and display orders
@@ -41,8 +46,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     orderDiv.innerHTML = `
           <strong>${order.name}</strong> (Table: ${order.table}, Contact: ${
       order.contact
-    }) - 
-          ${order.order} 
+    }) 
+          <strong>Order:</strong> ${order.order} <br>
+        <strong>Price:</strong> ${order.price ? order.price : "$0.00"} <br>
           <span class="${order.status === "Pending" ? "pending" : "complete"}">
               ${order.status}
           </span>
@@ -87,6 +93,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const response = await fetch("http://localhost:3000/orders");
     const orders = await response.json();
 
+    //limits the table to only 15
+    const maxtable = 15
+    const usedtables = new Set(orders.map(order=>order.table))
+
+    if(usedtables.size >= maxtable){
+      alert ("All tables are occupied! please wait for another table")
+      return;
+    }
+    if(usedtables.has(table)){
+      alert(`table ${table} is already occupied please choose another table`)
+      return;
+    }
+
     // Determine the next sequential ID
     const lastId =
       orders.length > 0 ? Math.max(...orders.map((order) => order.id)) : 0;
@@ -98,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       contact,
       table,
       order: orderDetails,
-      price: orderPrice,   // Add price to order
+      price: `$${parseFloat(orderPrice.replace("$", ""))}`,  // Ensure price format. Add price to order
       status: "Pending",
     };
 
